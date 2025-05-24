@@ -1,0 +1,37 @@
+
+// Create Player 
+
+POST http://localhost:8000/api/v1/players
+
+
+// Update Player
+
+PATCH http://localhost:8000/api/v1/players/683163e9ddbc0bbdd2958093
+
+
+// Delete Player
+
+DELETE http://localhost:8000/api/v1/players/6830cf30a5a0b64d2b731a58
+
+
+// Get Player Details
+
+http://localhost:8000/api/v1/players/683163e9ddbc0bbdd2958093/description
+
+
+
+// Get players with Pagination
+
+Base Url :                         GET /api/v1/players
+
+Pagination :                       GET /api/v1/players?page=2&limit=5
+Search by Name (Case-insensitive): GET /api/v1/players?search=virat
+
+Filter by Team                     GET /api/v1/players?team=CSK
+
+sort by run and salary             GET /api/v1/players?sortBy=runs&order=asc
+                                   GET /api/v1/players?sortBy=salary&order=desc
+
+Search + Team + Sort + Pagination  
+
+GET /api/v1/players?search=Kumar&team=CSK&sortBy=runs&order=asc&page=1&limit=5
