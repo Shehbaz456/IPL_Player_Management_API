@@ -1,0 +1,1 @@
+export { default as validatePlayer } from './player.validator.js';
