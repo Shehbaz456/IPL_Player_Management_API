@@ -2,33 +2,39 @@ import Joi from 'joi';
 
 const playerSchema = Joi.object({
   name: Joi.string().trim().required().messages({
-    'string.base': 'Name must be a string.',
-    'string.empty': 'Name cannot be empty.',
-    'any.required': 'Name is required.'
+    'string.base': 'Player name should be a valid string.',
+    'string.empty': 'Player name cannot be empty.',
+    'any.required': 'Player name is required.'
   }),
+  
   team: Joi.string().trim().required().messages({
-    'string.base': 'Team name must be a string.',
+    'string.base': 'Team must be a valid string.',
     'string.empty': 'Team name cannot be empty.',
     'any.required': 'Team name is required.'
   }),
+  
   country: Joi.string().trim().required().messages({
-    'string.base': 'Country must be a string.',
+    'string.base': 'Country should be a valid string.',
     'string.empty': 'Country cannot be empty.',
     'any.required': 'Country is required.'
   }),
+  
   runs: Joi.number().integer().min(0).required().messages({
-    'number.base': 'Runs must be a number.',
-    'number.min': 'Runs must be a positive number.',
+    'number.base': 'Runs must be a valid number.',
+    'number.integer': 'Runs must be an integer value.',
+    'number.min': 'Runs cannot be negative.',
     'any.required': 'Runs are required.'
   }),
+  
   role: Joi.string().valid('Batsman', 'Bowler', 'All-rounder').required().messages({
-    'any.only': 'Role must be one of Batsman, Bowler, or All-rounder.',
-    'any.required': 'Role is required.'
+    'any.only': 'Role must be either "Batsman", "Bowler", or "All-rounder".',
+    'any.required': 'Player role is required.'
   }),
+  
   salary: Joi.number().positive().required().messages({
-    'number.base': 'Salary must be a number.',
-    'number.positive': 'Salary must be a positive number.',
-    'any.required': 'Salary is required.'
+    'number.base': 'Salary must be a valid number.',
+    'number.positive': 'Salary must be greater than zero.',
+    'any.required': 'Player salary is required.'
   })
 });
 

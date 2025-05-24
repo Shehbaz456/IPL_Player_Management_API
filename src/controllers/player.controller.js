@@ -9,24 +9,71 @@ import {
 
 import { Player } from "../models/player.model.js";
 
-// Function to get all players
-export const getPlayers = asyncHandler(async (req, res) => {
-    const players = await Player.find().select({
-        name: 1,
-        image: 1,
-        role: 1,
-        team: 1,
-    });
 
-    console.log("Players found:", players);
-    // Check if players exist
-    if (!players || players.length === 0) {
-        throw new ApiError(404, "No players found");
+export const getPlayers = asyncHandler(async (req, res) => {
+    
+    const page = Math.max(1, parseInt(req.query.page)) || 1;
+    const limit = Math.max(1, parseInt(req.query.limit)) || 10;
+    const skip = (page - 1) * limit;
+
+    // filter by team and search by name
+    const team = req.query.team?.toUpperCase();
+    const search = req.query.search?.trim();
+    const sortBy = req.query.sortBy;            // sort by "runs" or "salary"
+    const order = req.query.order === "asc" ? 1 : -1;
+
+    // Build query object
+    const query = {};
+    if (team) {
+        query.team = team;
     }
-    return res.status(200).json(new ApiResponse(200, players));
+    // search by name
+    if (search) {
+        query.name = { $regex: search, $options: "i" }; // case-insensitive search
+    }
+
+     // Build sort options
+    const sortOptions = {};
+    if (sortBy === "runs" || sortBy === "salary") {
+        sortOptions[sortBy] = order;
+    } else {
+        sortOptions.createdAt = -1; // Default sort
+    }
+    // console.log("Sort options:", sortOptions);
+
+    
+    const totalPlayers = await Player.countDocuments(query);
+    const totalPages = Math.ceil(totalPlayers / limit);
+    
+    if (page > totalPages && totalPlayers > 0) {
+        throw new ApiError(400, "Page number exceeds total pages");
+    }
+
+    const players = await Player.find(query)
+        .select({ _id: 1, name: 1, image: 1, role: 1, team: 1,  runs: 1, salary: 1 })
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit);
+    // console.log("Total players:", totalPlayers);
+
+    return res.status(200).json({
+        page,
+        limit,
+        total: totalPlayers,
+        totalPages,
+        players: players.map(p => ({
+            id: p._id,
+            name: p.name,
+            image: p.image,
+            role: p.role,
+            team: p.team,
+            runs: p.runs,
+            salary: p.salary
+        }))
+    });       
+    
 });
 
-// Function to get a player by ID
 export const getPlayerDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -45,7 +92,6 @@ export const getPlayerDetails = asyncHandler(async (req, res) => {
     return res.status(200).json(player);
 });
 
-// Function to create a new player
 export const createPlayer = asyncHandler(async (req, res) => {
     const { name, team, country, runs, role, salary } = req.body;
 
@@ -82,7 +128,6 @@ export const createPlayer = asyncHandler(async (req, res) => {
     // return res.status(201).json(new ApiResponse(201, "Player created successfully"));
 });
 
-// Function to update a player by ID
 export const updatePlayer = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
@@ -90,7 +135,7 @@ export const updatePlayer = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid player ID");
     }
 
-    // Find existing player
+    // Check if player exists
     const existingPlayer = await Player.findById(id);
     if (!existingPlayer) {
         throw new ApiError(404, "Player not found");
@@ -138,7 +183,6 @@ export const updatePlayer = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Player updated successfully" });
 });
 
-// Function to delete a player by ID
 export const deletePlayer = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
